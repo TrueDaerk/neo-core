@@ -12,7 +12,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Neo\\Service\\": "./src/service"
+      "Neo\\Service\\": "./src/service",
+      "Neo\\Annotations\\": "./src/annotations"
     }
   }
 }
