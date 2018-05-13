@@ -5,7 +5,9 @@
   "keywords": [
     "core",
     "truedaerk",
-    "php7"
+    "php7",
+    "annotations",
+    "phpdoc"
   ],
   "require-dev": {
     "phpunit/phpunit": "6.*"
