@@ -50,6 +50,13 @@ class ServiceContainerTest extends TestCase {
       }
    }
 
+   public function testPrototype() {
+      $this->container[Service::class] = [ServiceImpl::class, ServiceContainer::PROTOTYPE];
+      $copy1 = $this->container[Service::class];
+      $copy2 = $this->container[Service::class];
+      $this->assertNotSame($copy1, $copy2);
+   }
+
    public function createService() {
       return new ServiceImpl();
    }

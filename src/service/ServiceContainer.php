@@ -4,6 +4,7 @@ namespace Neo\Service;
 
 class ServiceContainer implements \ArrayAccess {
    /* Static fields */
+   public const PROTOTYPE = "prototype";
    /**
     * @var ServiceContainer[]
     */
@@ -84,6 +85,11 @@ class ServiceContainer implements \ArrayAccess {
          // If the given value is a class name, will try to create an instance
          $value = new $value();
          $this->services[$name] = $value;
+      } elseif (is_array($value) && count($value) == 2) {
+         // Check for prototype options
+         if (class_exists($value[0]) && $value[1] === self::PROTOTYPE) {
+            $value = new $value[0]();
+         }
       }
       // And return the initialized service
       return $value;
