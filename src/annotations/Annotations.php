@@ -8,13 +8,19 @@ class Annotations {
    /**
     * Reads the annotations from the given class (instance or name).
     *
-    * @param object|string $class Instance of the class to read the annotations or name of the class.
+    * @param object|string|array $class Instance of the class to read the annotations or name of the class. Alternatively, a class method can be given.
     * @return array|bool Assoc array containing the annotation name (without @) and the text after the annotation.
     * Returns false if the given class does not exist.
     */
    public static function getAnnotationsForClass($class) {
       try {
-         $reflection = new \ReflectionClass($class);
+         // Try to get method first. If it succeeds, get the class reflection from that
+         $reflection = self::getMethodReflection($class);
+         if ($reflection instanceof \ReflectionMethod) {
+            $reflection = $reflection->getDeclaringClass();
+         } else {
+            $reflection = new \ReflectionClass($class);
+         }
       } catch (\Exception $e) {
          return false;
       }
@@ -39,7 +45,7 @@ class Annotations {
    /**
     * Retrieve a single annotation of the class.
     *
-    * @param object|string $class Instance or name of the class to retrieve the annotation.
+    * @param object|string|array $class Instance or name of the class to retrieve the annotation.
     * @param string $name Name of the annotation to get the value.
     * @return string|bool Value of the annotation found, or false, if the annotation was not found.
     * Returns false if the given class does not exist.
@@ -61,22 +67,11 @@ class Annotations {
     * Returns false if the given method does not exist or had an invalid format.
     */
    public static function getAnnotationsForMethod($method) {
-      try {
-         if (is_array($method)) {
-            if (count($method) === 2) {
-               $class = new \ReflectionClass($method[0]);
-               $reflection = $class->getMethod($method[1]);
-            } else {
-               // Empty array, because wrong method.
-               return [];
-            }
-         } elseif (is_string($method)) {
-            $reflection = new \ReflectionMethod($method);
-         } else {
-            // Invalid method
-            return [];
-         }
-      } catch (\Exception $exception) {
+      $reflection = self::getMethodReflection($method);
+      if (!isset($reflection)) {
+         return [];
+
+      } elseif ($reflection === false) {
          return false;
       }
       // Create key for cache
@@ -97,6 +92,7 @@ class Annotations {
       self::$annotationCache[$key] = $annotations;
       return $annotations;
    }
+
    /**
     * Retrieve a single annotation of the method.
     *
@@ -112,6 +108,33 @@ class Annotations {
          return null;
       }
       return @$annotations[$name] ?: false;
+   }
+
+   /**
+    * Retrieves the reflection method.
+    *
+    * @param string|array $method Method to get the reflection instance.
+    * @return array|bool|\ReflectionMethod
+    */
+   public static function getMethodReflection($method) {
+      try {
+         if (is_array($method)) {
+            if (count($method) === 2) {
+               $reflection = new \ReflectionMethod($method[0], $method[1]);
+            } else {
+               // Empty array, because wrong method.
+               return null;
+            }
+         } elseif (is_string($method)) {
+            $reflection = new \ReflectionMethod($method);
+         } else {
+            // Invalid method
+            return null;
+         }
+      } catch (\Exception $exception) {
+         return false;
+      }
+      return $reflection;
    }
 
    /**

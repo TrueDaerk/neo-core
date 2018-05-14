@@ -41,6 +41,13 @@ class AnnotationsTest extends TestCase {
    public function testGetAnnotationForClass() {
       $this->assertEquals("Neo\\Annotations", Annotations::getAnnotationForClass($this, "package"));
       $this->assertEquals("__auth over multiline", Annotations::getAnnotationForClass($this, "Authentication"));
+
+      // Test by method
+      $this->assertEquals("Neo\\Annotations", Annotations::getAnnotationForClass([$this, "testGetAnnotationForClass"], "package"));
+      $this->assertEquals("__auth over multiline",
+         Annotations::getAnnotationForClass([AnnotationsTest::class, "testGetAnnotationForClass"], "Authentication"));
+      $this->assertEquals("__auth over multiline",
+         Annotations::getAnnotationForClass(AnnotationsTest::class . "::testGetAnnotationForClass", "Authentication"));
    }
 
    public function testGetAnnotationsForMethod() {
